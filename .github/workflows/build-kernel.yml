@@ -130,27 +130,8 @@ jobs:
       - name: Resolve configuration
         run: bash scripts/config.sh
 
-      - name: Free up disk space
-        if: env.REMOVE_UNUSED_PACKAGES == 'true'
-        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
-        with:
-          tool-cache: true
-          android: false
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
 
-      - name: Add swap space
-        run: |
-          # LTO links are memory-hungry and the runner has 16GB; a swap file is
-          # cheaper and more predictable than an unpinned third-party action.
-          sudo fallocate -l 8G /mnt/swapfile
-          sudo chmod 600 /mnt/swapfile
-          sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile
-          free -h
+
 
       - name: Install build dependencies
         run: |
@@ -178,12 +159,6 @@ jobs:
       - name: Apply kernel patches
         run: bash scripts/patches.sh all
 
-      - name: Set up ccache
-        if: env.ENABLE_CCACHE == 'true'
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: kernel-${{ env.DEVICE }}-${{ env.KSU_VARIANT }}-${{ env.KERNEL_VERSION }}
-          max-size: 2G
 
       - name: Build kernel
         run: bash scripts/build.sh all
